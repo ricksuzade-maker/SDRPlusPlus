@@ -1,8 +1,11 @@
 name: Build Binaries
 
 on:
-  watch:
-    types: started
+  workflow_dispatch:
+  schedule:
+    - cron: 0 18 * * *
+#  watch:
+#    types: started
 
 env:
     # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
