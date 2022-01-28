@@ -284,7 +284,7 @@ jobs:
 
     create_full_archive:
     #   needs: ['build_windows', 'build_macos', 'build_debian_buster', 'build_debian_bullseye', 'build_debian_sid', 'build_ubuntu_bionic', 'build_ubuntu_focal', 'build_ubuntu_groovy', 'build_ubuntu_hirsute', 'build_ubuntu_impish', 'build_raspios_bullseye']
-        needs: ['build_windows', 'build_macos', 'build_debian_buster', 'build_debian_bullseye', 'build_debian_sid', 'build_ubuntu_bionic', 'build_ubuntu_focal', 'build_ubuntu_hirsute', 'build_ubuntu_impish', 'build_raspios_bullseye_armhf']
+        needs: ['build_windows', 'build_macos', 'build_debian_buster', 'build_debian_bullseye', 'build_debian_sid', 'build_ubuntu_bionic', 'build_ubuntu_focal', 'build_ubuntu_hirsute', 'build_ubuntu_impish']
         runs-on: ubuntu-latest
 
         steps:
@@ -302,8 +302,7 @@ jobs:
             mv sdrpp_ubuntu_bionic_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_ubuntu_bionic_amd64.deb && 
             mv sdrpp_ubuntu_focal_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_ubuntu_focal_amd64.deb &&
             mv sdrpp_ubuntu_hirsute_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_ubuntu_hirsute_amd64.deb &&
-            mv sdrpp_ubuntu_impish_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_ubuntu_impish_amd64.deb &&
-            mv sdrpp_raspios_bullseye_armhf/sdrpp_debian_armhf.deb sdrpp_all/sdrpp_raspios_bullseye_armhf.deb
+            mv sdrpp_ubuntu_impish_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_ubuntu_impish_amd64.deb
 
         - uses: actions/upload-artifact@v2
           with:
