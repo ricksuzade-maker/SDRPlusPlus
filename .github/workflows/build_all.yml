@@ -1,6 +1,8 @@
 name: Build Binaries
 
-on: [push, pull_request]
+on:
+  watch:
+    types: started
 
 env:
     # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
