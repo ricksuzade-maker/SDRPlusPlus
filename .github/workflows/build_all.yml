@@ -12,73 +12,7 @@ env:
     BUILD_TYPE: Release
 
 jobs:
-    build_windows:
-        runs-on: windows-latest
-
-        steps:
-        - uses: actions/checkout@v2
-        
-        - name: Create Build Environment
-          run: cmake -E make_directory ${{runner.workspace}}/build
-
-        - name: Download PothosSDR
-          run: Invoke-WebRequest -Uri "https://downloads.myriadrf.org/builds/PothosSDR/PothosSDR-2020.01.26-vc14-x64.exe" -OutFile ${{runner.workspace}}/pothos.exe
-
-        - name: Install PothosSDR
-          run: mkdir "C:/Program Files/PothosSDR" ; 7z x ${{runner.workspace}}/pothos.exe -o"C:/Program Files/PothosSDR/"
-
-        - name: Download libusb
-          run: Invoke-WebRequest -Uri "https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z" -OutFile ${{runner.workspace}}/libusb.7z
-
-        - name: Patch Pothos with earlier libusb version
-          working-directory: ${{runner.workspace}}
-          run: 7z x libusb.7z -olibusb_old ; rm "C:/Program Files/PothosSDR/bin/libusb-1.0.dll" ; cp "libusb_old/MS64/dll/libusb-1.0.dll" "C:/Program Files/PothosSDR/bin/"
- 
-        - name: Download SDRPlay API
-          run: Invoke-WebRequest -Uri "https://drive.google.com/uc?id=12UHPMwkfa67A11QZDmpCT4iwHnyJHWuu" -OutFile ${{runner.workspace}}/SDRPlay.zip
-
-        - name: Install SDRPlay API
-          run: 7z x ${{runner.workspace}}/SDRPlay.zip -o"C:/Program Files/"
-
-        - name: Download codec2
-          run: git clone https://github.com/AlexandreRouma/codec2
-
-        - name: Prepare MinGW
-          run: C:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -c "pacman --noconfirm -S --needed base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja"
-
-        - name: Prepare build for codec2
-          run: cd codec2 ; mkdir build ; cd build ; C:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -c "cmake .. -DCMAKE_GNUtoMS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS=-static-libgcc"
-
-        - name: Build codec2
-          run: cd codec2/build ; C:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -c "ninja"
-
-        - name: Install codec2
-          run: mkdir "C:/Program Files/codec2" ; mkdir "C:/Program Files/codec2/include" ; mkdir "C:/Program Files/codec2/include/codec2" ; mkdir "C:/Program Files/codec2/lib" ; cd "codec2" ; xcopy "src" "C:/Program Files/codec2/include" ; cd "build" ; xcopy "src" "C:/Program Files/codec2/lib" ; xcopy "codec2" "C:/Program Files/codec2/include/codec2"
-
-        - name: Install vcpkg dependencies
-          run: vcpkg install fftw3:x64-windows glfw3:x64-windows portaudio:x64-windows zstd:x64-windows
-
-        - name: Install rtaudio
-          run: git clone https://github.com/thestk/rtaudio ; cd rtaudio ; git checkout 2f2fca4502d506abc50f6d4473b2836d24cfb1e3 ; mkdir build ; cd build ; cmake .. ; cmake --build . --config Release ; cmake --install .
-
-        - name: Prepare CMake
-          working-directory: ${{runner.workspace}}/build
-          run: cmake "$Env:GITHUB_WORKSPACE" "-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" -DOPT_BUILD_BLADERF_SOURCE=ON -DOPT_BUILD_LIMESDR_SOURCE=ON -DOPT_BUILD_SDRPLAY_SOURCE=ON -DOPT_BUILD_NEW_PORTAUDIO_SINK=ON -DOPT_BUILD_M17_DECODER=ON
-
-        - name: Build
-          working-directory: ${{runner.workspace}}/build
-          run: cmake --build . --config Release --verbose
-
-        - name: Create Archive
-          working-directory: ${{runner.workspace}}
-          run: '&($Env:GITHUB_WORKSPACE + "/make_windows_package.ps1") ./build ($Env:GITHUB_WORKSPACE + "/root")'
-
-        - name: Save Archive
-          uses: actions/upload-artifact@v2
-          with:
-              name: sdrpp_windows_x64
-              path: ${{runner.workspace}}/sdrpp_windows_x64.zip
-
+    
     build_macos:
         runs-on: macos-10.15
 
@@ -284,7 +218,7 @@ jobs:
 
     create_full_archive:
     #   needs: ['build_windows', 'build_macos', 'build_debian_buster', 'build_debian_bullseye', 'build_debian_sid', 'build_ubuntu_bionic', 'build_ubuntu_focal', 'build_ubuntu_groovy', 'build_ubuntu_hirsute', 'build_ubuntu_impish', 'build_raspios_bullseye']
-        needs: ['build_windows', 'build_macos', 'build_debian_buster', 'build_debian_bullseye', 'build_debian_sid', 'build_ubuntu_bionic', 'build_ubuntu_focal', 'build_ubuntu_hirsute', 'build_ubuntu_impish']
+        needs: ['build_macos', 'build_debian_buster', 'build_debian_bullseye', 'build_debian_sid', 'build_ubuntu_bionic', 'build_ubuntu_focal', 'build_ubuntu_hirsute', 'build_ubuntu_impish']
         runs-on: ubuntu-latest
 
         steps:
@@ -294,7 +228,6 @@ jobs:
         - name: Create Archive
           run: >
             mkdir sdrpp_all && 
-            mv sdrpp_windows_x64/sdrpp_windows_x64.zip sdrpp_all/ && 
             mv sdrpp_macos_intel/sdrpp_macos_intel.zip sdrpp_all/ && 
             mv sdrpp_debian_buster_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_debian_buster_amd64.deb && 
             mv sdrpp_debian_bullseye_amd64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_debian_bullseye_amd64.deb && 
